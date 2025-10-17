@@ -15,6 +15,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import com.cloudinary.Cloudinary;
+import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -22,6 +25,8 @@ public class DipendentiService {
 
     @Autowired
     private DipendentiRepository dipendentiRepository;
+    @Autowired
+    private Cloudinary imageUploader;
 
     public Page<Dipendente> findAll(int pageNumber, int pageSize, String sortBy) {
         if (pageSize > 50) pageSize = 50;
@@ -84,6 +89,26 @@ public class DipendentiService {
         Dipendente found = this.findById(dipendenteId);
         this.dipendentiRepository.delete(found);
         log.info("dipendente eliminato con id " + dipendenteId);
+    }
+
+    public String uploadImmagineProfilo(UUID dipendenteId, MultipartFile file) {
+        Dipendente dipendente = this.findById(dipendenteId);
+
+        if (file.isEmpty()) throw new BadRequestException("file vuoto");
+        if (file.getSize() > 5242880) throw new BadRequestException("file troppo grande");
+        if (!file.getContentType().equals("image/png") && !file.getContentType().equals("image/jpeg")) {
+            throw new BadRequestException("i formati permessi sono png e jpeg");
+        }
+
+        try {
+            String imageURL = (String) imageUploader.uploader().upload(file.getBytes(), Map.of()).get("url");
+            dipendente.setImmagineProfilo(imageURL);
+            this.dipendentiRepository.save(dipendente);
+            log.info("immagine profilo aggiornata per dipendente con id " + dipendenteId);
+            return imageURL;
+        } catch (Exception e) {
+            throw new RuntimeException("errore durante upload immagine");
+        }
     }
 }
 
