@@ -9,3 +9,5 @@ import java.util.UUID;
 @Repository
 public interface ViaggiRepository extends JpaRepository<Viaggio, UUID> {
 }
+
+

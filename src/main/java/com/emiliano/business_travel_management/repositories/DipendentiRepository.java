@@ -13,3 +13,5 @@ public interface DipendentiRepository extends JpaRepository<Dipendente, UUID> {
 
     Optional<Dipendente> findByUsername(String username);
 }
+
+
