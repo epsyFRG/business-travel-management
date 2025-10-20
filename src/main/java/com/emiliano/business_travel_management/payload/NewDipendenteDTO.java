@@ -19,6 +19,10 @@ public record NewDipendenteDTO(
 
         @NotBlank(message = "l'email è obbligatoria")
         @Email(message = "l'indirizzo email inserito non è nel formato corretto")
-        String email
+        String email,
+
+        @NotBlank(message = "la password è obbligatoria")
+        @Size(min = 4, message = "la password deve avere minimo 4 caratteri")
+        String password
 ) {
 }

@@ -36,4 +36,10 @@ public class ExceptionsHandler {
         ex.printStackTrace();
         return new ErrorsDTO("c'è stato un errore generico", LocalDateTime.now());
     }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorsDTO handleUnauthorized(UnauthorizedException ex) {
+        return new ErrorsDTO(ex.getMessage(), LocalDateTime.now());
+    }
 }

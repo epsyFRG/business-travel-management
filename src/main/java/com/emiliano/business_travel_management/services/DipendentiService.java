@@ -1,5 +1,6 @@
 package com.emiliano.business_travel_management.services;
 
+import com.cloudinary.Cloudinary;
 import com.emiliano.business_travel_management.entities.Dipendente;
 import com.emiliano.business_travel_management.exceptions.BadRequestException;
 import com.emiliano.business_travel_management.exceptions.NotFoundException;
@@ -13,11 +14,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
-import com.cloudinary.Cloudinary;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -43,7 +43,7 @@ public class DipendentiService {
             throw new BadRequestException("lo username " + dipendente.getUsername() + " è già in uso");
         });
 
-        Dipendente newDipendente = new Dipendente(payload.username(), payload.nome(), payload.cognome(), payload.email());
+        Dipendente newDipendente = new Dipendente(payload.username(), payload.nome(), payload.cognome(), payload.email(), payload.password());
         newDipendente.setImmagineProfilo("https://ui-avatars.com/api/?name=" + payload.nome() + "+" + payload.cognome());
 
         Dipendente savedDipendente = this.dipendentiRepository.save(newDipendente);
@@ -110,6 +110,10 @@ public class DipendentiService {
             throw new RuntimeException("errore durante upload immagine");
         }
     }
-}
 
+    public Dipendente findByEmail(String email) {
+        return this.dipendentiRepository.findByEmail(email)
+                .orElseThrow(() -> new NotFoundException("dipendente con email " + email + " non trovato"));
+    }
+}
 
