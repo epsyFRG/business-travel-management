@@ -9,6 +9,7 @@ import com.emiliano.business_travel_management.services.ViaggiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,15 +23,19 @@ public class ViaggiController {
     @Autowired
     private ViaggiService viaggiService;
 
+    
     @GetMapping
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public Page<Viaggio> findAll(@RequestParam(defaultValue = "0") int page,
                                  @RequestParam(defaultValue = "10") int size,
                                  @RequestParam(defaultValue = "id") String sortBy) {
         return this.viaggiService.findAll(page, size, sortBy);
     }
 
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public Viaggio createViaggio(@RequestBody @Validated NewViaggioDTO payload, BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             throw new ValidationException(validationResult.getFieldErrors()
@@ -40,12 +45,17 @@ public class ViaggiController {
     }
 
     @GetMapping("/{viaggioId}")
+    @PreAuthorize("hasAnyAuthority('USER', 'ADMIN')")
     public Viaggio findById(@PathVariable UUID viaggioId) {
         return this.viaggiService.findById(viaggioId);
     }
 
+
     @PutMapping("/{viaggioId}")
-    public Viaggio findByIdAndUpdate(@PathVariable UUID viaggioId, @RequestBody @Validated UpdateViaggioDTO payload, BindingResult validationResult) {
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Viaggio findByIdAndUpdate(@PathVariable UUID viaggioId,
+                                     @RequestBody @Validated UpdateViaggioDTO payload,
+                                     BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             throw new ValidationException(validationResult.getFieldErrors()
                     .stream().map(fieldError -> fieldError.getDefaultMessage()).toList());
@@ -53,8 +63,12 @@ public class ViaggiController {
         return this.viaggiService.findByIdAndUpdate(viaggioId, payload);
     }
 
+
     @PatchMapping("/{viaggioId}/stato")
-    public Viaggio updateStato(@PathVariable UUID viaggioId, @RequestBody @Validated UpdateStatoViaggioDTO payload, BindingResult validationResult) {
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public Viaggio updateStato(@PathVariable UUID viaggioId,
+                               @RequestBody @Validated UpdateStatoViaggioDTO payload,
+                               BindingResult validationResult) {
         if (validationResult.hasErrors()) {
             throw new ValidationException(validationResult.getFieldErrors()
                     .stream().map(fieldError -> fieldError.getDefaultMessage()).toList());
@@ -62,8 +76,10 @@ public class ViaggiController {
         return this.viaggiService.updateStato(viaggioId, payload);
     }
 
+
     @DeleteMapping("/{viaggioId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('ADMIN')")
     public void findByIdAndDelete(@PathVariable UUID viaggioId) {
         this.viaggiService.findByIdAndDelete(viaggioId);
     }

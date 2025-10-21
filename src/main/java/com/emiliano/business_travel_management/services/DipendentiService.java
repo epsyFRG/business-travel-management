@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,8 +26,12 @@ public class DipendentiService {
 
     @Autowired
     private DipendentiRepository dipendentiRepository;
+
     @Autowired
     private Cloudinary imageUploader;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Page<Dipendente> findAll(int pageNumber, int pageSize, String sortBy) {
         if (pageSize > 50) pageSize = 50;
@@ -43,7 +48,13 @@ public class DipendentiService {
             throw new BadRequestException("lo username " + dipendente.getUsername() + " è già in uso");
         });
 
-        Dipendente newDipendente = new Dipendente(payload.username(), payload.nome(), payload.cognome(), payload.email(), payload.password());
+        Dipendente newDipendente = new Dipendente(
+                payload.username(),
+                payload.nome(),
+                payload.cognome(),
+                payload.email(),
+                passwordEncoder.encode(payload.password())
+        );
         newDipendente.setImmagineProfilo("https://ui-avatars.com/api/?name=" + payload.nome() + "+" + payload.cognome());
 
         Dipendente savedDipendente = this.dipendentiRepository.save(newDipendente);
@@ -116,4 +127,3 @@ public class DipendentiService {
                 .orElseThrow(() -> new NotFoundException("dipendente con email " + email + " non trovato"));
     }
 }
-
